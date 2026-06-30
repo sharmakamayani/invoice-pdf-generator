@@ -1,5 +1,10 @@
+import AuthProvider from "@/components/AuthProvider";
 import InvoiceBuilder from "@/components/InvoiceBuilder";
 
 export default function Home() {
-  return <InvoiceBuilder />;
+  return (
+    <AuthProvider>
+      <InvoiceBuilder />
+    </AuthProvider>
+  );
 }

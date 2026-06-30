@@ -1,3 +1,12 @@
 .next/
 node_modules/
 .env.local
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Test artifacts
+/coverage/
+/test-results/
+/playwright-report/
+/playwright/.cache/

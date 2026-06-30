@@ -14,3 +14,64 @@ body {
 input, select, textarea {
   font-family: inherit;
 }
+
+/* Remove native number spinners — they hide the value in narrow cells (qty). */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ── Dark mode ─────────────────────────────────────────────────────────────
+   Scoped overrides so every child component (cards, inputs, lists, modal)
+   recolours consistently without per-element dark: variants. */
+.dark-mode { color-scheme: dark; }
+
+.dark-mode .bg-white { background-color: #1e293b !important; }
+.dark-mode .bg-gray-50 { background-color: #0f172a !important; }
+.dark-mode .bg-gray-100 { background-color: #334155 !important; }
+
+.dark-mode .border-gray-100 { border-color: #334155 !important; }
+.dark-mode .border-gray-200 { border-color: #334155 !important; }
+
+.dark-mode .text-gray-900,
+.dark-mode .text-gray-800 { color: #f1f5f9 !important; }
+.dark-mode .text-gray-700 { color: #e2e8f0 !important; }
+.dark-mode .text-gray-600 { color: #cbd5e1 !important; }
+.dark-mode .text-gray-500 { color: #94a3b8 !important; }
+.dark-mode .text-gray-400 { color: #64748b !important; }
+
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder { color: #64748b !important; }
+
+.dark-mode .shadow-sm,
+.dark-mode .shadow-md,
+.dark-mode .shadow-xl { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important; }
+
+/* Hover states */
+.dark-mode .hover\:bg-gray-50:hover { background-color: #334155 !important; }
+.dark-mode .hover\:bg-gray-100:hover { background-color: #475569 !important; }
+
+/* Dashed upload / placeholder borders */
+.dark-mode .border-dashed { border-color: #475569 !important; }
+
+/* Light accent backgrounds → dark tints so coloured text stays readable.
+   (Selected provider/template/watermark chips, status pills, info panels.) */
+.dark-mode .bg-indigo-50 { background-color: #1e2a4a !important; }
+.dark-mode .bg-blue-50 { background-color: #16263f !important; }
+.dark-mode .bg-emerald-50,
+.dark-mode .bg-green-50 { background-color: #0f2e24 !important; }
+.dark-mode .bg-red-50 { background-color: #3a1d1d !important; }
+.dark-mode .bg-amber-50,
+.dark-mode .bg-yellow-50 { background-color: #3a2e10 !important; }

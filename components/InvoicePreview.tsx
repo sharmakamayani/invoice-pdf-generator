@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import type { InvoiceData } from "@/lib/types";
+import { computeInvoice } from "@/lib/calculations";
 
 interface Props {
   data: InvoiceData;
@@ -39,6 +40,29 @@ export default function InvoicePreview({ data }: Props) {
     }
   }
 
+  async function downloadReceipt() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Receipt-${data.invoiceNumber}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const comp = computeInvoice(data);
+  const isPaid = comp.paid > 0 && comp.balance <= 0.005;
+
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
@@ -47,6 +71,15 @@ export default function InvoicePreview({ data }: Props) {
           {pdfUrl ? "Preview" : "Ready to generate"}
         </span>
         <div className="flex gap-2">
+          {isPaid && (
+            <button
+              onClick={downloadReceipt}
+              disabled={loading}
+              className="px-4 py-2 rounded-full text-sm font-semibold border border-green-200 text-green-600 hover:bg-green-50 transition-colors disabled:opacity-40"
+            >
+              🧾 Receipt
+            </button>
+          )}
           <button
             onClick={() => generatePDF(false)}
             disabled={loading}
