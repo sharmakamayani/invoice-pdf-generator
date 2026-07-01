@@ -145,6 +145,7 @@ export interface Expense {
   clientName?: string;
   projectId?: string;
   billable: boolean;
+  invoiced?: boolean; // added to an invoice as a billable line item
   receiptImage?: string; // data URL of the scanned receipt
   createdAt: string;
 }

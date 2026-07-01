@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { InvoiceData, DocumentType, Language, Project } from "@/lib/types";
-import { loadProjects } from "@/lib/storage";
+import type { InvoiceData, DocumentType, Language, Project, Expense } from "@/lib/types";
+import { loadProjects, loadExpenses, saveExpense } from "@/lib/storage";
 import { currencies, getSymbol } from "@/lib/currencies";
 import { computeInvoice, fmt } from "@/lib/calculations";
 import { paymentTerms, dueDateFromTerm } from "@/lib/paymentTerms";
@@ -34,10 +34,39 @@ const STATUS_OPTIONS = [
 
 export default function InvoiceForm({ data, onChange }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [showBillable, setShowBillable] = useState(false);
+  const [billable, setBillable] = useState<Expense[]>([]);
   useEffect(() => { setProjects(loadProjects().filter((p) => !p.archived)); }, []);
 
   function set<K extends keyof InvoiceData>(key: K, value: InvoiceData[K]) {
     onChange({ ...data, [key]: value });
+  }
+
+  function openBillable() {
+    if (showBillable) { setShowBillable(false); return; }
+    const clientName = data.client.name.trim().toLowerCase();
+    const list = loadExpenses()
+      .filter((e) => e.billable && !e.invoiced)
+      .sort((a, b) => {
+        // surface expenses tagged to this invoice's client/project first
+        const am = (data.projectId && a.projectId === data.projectId) || (clientName && a.clientName?.toLowerCase() === clientName) ? 0 : 1;
+        const bm = (data.projectId && b.projectId === data.projectId) || (clientName && b.clientName?.toLowerCase() === clientName) ? 0 : 1;
+        return am - bm;
+      });
+    setBillable(list);
+    setShowBillable(true);
+  }
+
+  function addExpenseAsLine(e: Expense) {
+    onChange({
+      ...data,
+      lineItems: [
+        ...data.lineItems,
+        { id: crypto.randomUUID(), description: e.description ? `${e.vendor} — ${e.description}` : e.vendor, quantity: 1, rate: e.amount, category: "expenses" },
+      ],
+    });
+    saveExpense({ ...e, invoiced: true }); // won't be offered again
+    setBillable((prev) => prev.filter((x) => x.id !== e.id));
   }
 
   function setIssueDate(value: string) {
@@ -215,6 +244,38 @@ export default function InvoiceForm({ data, onChange }: Props) {
       <div className={section}>
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Line Items</h3>
         <LineItems items={data.lineItems} currency={data.currency} onChange={(items) => set("lineItems", items)} />
+
+        {/* Billable expenses */}
+        <button onClick={openBillable} className="mt-3 text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 transition-colors">
+          🧾 Add billable expenses
+        </button>
+        {showBillable && (
+          <div className="mt-2 border border-gray-200 rounded-xl p-3 bg-gray-50">
+            {billable.length === 0 ? (
+              <p className="text-sm text-gray-400">
+                No unbilled billable expenses. Tick “Billable to client” on an expense in the Expenses tab first.
+              </p>
+            ) : (
+              <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                {billable.map((e) => (
+                  <button
+                    key={e.id}
+                    onClick={() => addExpenseAsLine(e)}
+                    className="w-full text-left flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-gray-100 hover:border-emerald-200 transition-colors"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {e.vendor}
+                      {e.clientName ? <span className="text-xs text-gray-400"> · {e.clientName}</span> : null}
+                    </span>
+                    <span className="text-sm font-medium text-gray-500 ml-2 flex-shrink-0">
+                      {getSymbol(e.currency)}{e.amount.toFixed(2)}{e.currency !== data.currency ? ` ${e.currency}` : ""}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-gray-100">
           <div>

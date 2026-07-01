@@ -122,7 +122,7 @@ export default function Expenses() {
               {e.receiptImage && <img src={e.receiptImage} alt="" className="w-10 h-10 object-cover rounded-lg border border-gray-100 flex-shrink-0" />}
               <div className="min-w-0">
                 <p className="font-semibold text-gray-800 text-sm truncate">{e.vendor} <span className="text-xs font-normal text-gray-400 capitalize">· {e.category}</span></p>
-                <p className="text-xs text-gray-500 truncate">{e.date}{e.clientName ? ` · ${e.clientName}` : ""}{e.billable ? " · billable" : ""}</p>
+                <p className="text-xs text-gray-500 truncate">{e.date}{e.clientName ? ` · ${e.clientName}` : ""}{e.billable ? " · billable" : ""}{e.invoiced ? " · ✓ invoiced" : ""}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
